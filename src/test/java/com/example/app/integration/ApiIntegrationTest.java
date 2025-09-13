@@ -1,0 +1,37 @@
+package com.example.app.integration;
+
+import com.example.app.entity.Address;
+import com.example.app.entity.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class ApiIntegrationTest {
+
+    @Autowired
+    private MockMvc mvc;
+
+    @Autowired
+    private ObjectMapper mapper;
+
+    @Test
+    void createUserAndQuery() throws Exception {
+        User u = new User("Amri", "Am", 28, "female", new Address("India","road","HCL","10"));
+        String json = mapper.writeValueAsString(u);
+        mvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/users/search").param("firstName","Mri").param("lastName","Am"))
+                .andExpect(status().isOk());
+    }
+}
