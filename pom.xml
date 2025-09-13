@@ -9,7 +9,7 @@
   <version>1.0.0</version>
   <packaging>jar</packaging>
 
-  <name>Users & Pets Management</name>
+  <name>Users &amp; Pets Management</name>
   <description>Spring Boot 3 application to manage users and their pets (H2)</description>
 
   <parent>

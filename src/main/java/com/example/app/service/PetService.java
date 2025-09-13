@@ -26,10 +26,11 @@ public class PetService {
 
     @Transactional
     public Pet addPet(Pet pet) {
-        User owner = pet.getOwner();
-        if (owner != null && owner.getId() != null) {
-            owner = userRepository.findById(owner.getId()).orElseThrow(() -> new NotFoundException("Owner not found " + owner.getId()));
-            pet.setOwner(owner);
+        if (pet.getOwner() != null && pet.getOwner().getId() != null) {
+            Long ownerId = pet.getOwner().getId();
+            User foundOwner = userRepository.findById(ownerId)
+                    .orElseThrow(() -> new NotFoundException("Owner not found " + ownerId));
+            pet.setOwner(foundOwner);
         }
         return petRepository.save(pet);
     }
