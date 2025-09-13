@@ -1,22 +1,32 @@
 package com.example.app.integration;
 
+import com.example.app.DemoApplication;
 import com.example.app.entity.Address;
 import com.example.app.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-@SpringBootTest
+@SpringBootTest(classes = DemoApplication.class)
 @AutoConfigureMockMvc
-public class ApiIntegrationTest {
+@EnableAutoConfiguration(exclude = {
+        SecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class
+})
+class ApiIntegrationTest {
 
     @Autowired
     private MockMvc mvc;
@@ -26,12 +36,29 @@ public class ApiIntegrationTest {
 
     @Test
     void createUserAndQuery() throws Exception {
-        User u = new User("Amri", "Am", 28, "female", new Address("India","road","HCL","10"));
+        User u = User.builder()
+                .firstName("Amri")
+                .lastName("Am")
+                .age(28)
+                .gender("female")
+                .address(Address.builder()
+                        .city("India")
+                        .type("road")
+                        .addressName("HCL")
+                        .number("10")
+                        .build())
+                .pets(new ArrayList<>())
+                .build();
+
         String json = mapper.writeValueAsString(u);
-        mvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(json))
+        mvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/api/users/search").param("firstName","Mri").param("lastName","Am"))
+        mvc.perform(get("/api/users/search")
+                        .param("firstName","Amri")
+                        .param("lastName","Am"))
                 .andExpect(status().isOk());
     }
 }

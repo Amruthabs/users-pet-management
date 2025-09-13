@@ -1,6 +1,7 @@
 package com.example.app.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 /**
  * Address entity used for Users' addresses.
@@ -8,6 +9,11 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "address")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Address {
 
     @Id
@@ -19,30 +25,9 @@ public class Address {
     private String addressName;
     private String number;
 
-    public Address() {}
-
-    public Address(String city, String type, String addressName, String number) {
-        this.city = city;
-        this.type = type;
-        this.addressName = addressName;
-        this.number = number;
-    }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
-
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-
-    public String getAddressName() { return addressName; }
-    public void setAddressName(String addressName) { this.addressName = addressName; }
-
-    public String getNumber() { return number; }
-    public void setNumber(String number) { this.number = number; }
-
+    /**
+     * Returns a formatted address string like "10, road Avenue, India"
+     */
     public String formatted() {
         StringBuilder sb = new StringBuilder();
         if (number != null && !number.isBlank()) sb.append(number).append(", ");
