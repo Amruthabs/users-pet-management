@@ -11,4 +11,5 @@ public class AddressDTO {
     private String type;
     private String addressName;
     private String number;
+    
 }
