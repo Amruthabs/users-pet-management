@@ -1,128 +1,153 @@
 package com.example.app.service;
 
-import com.example.app.entity.Address;
+import com.example.app.dto.UserDTO;
 import com.example.app.entity.User;
 import com.example.app.exception.NotFoundException;
+import com.example.app.mapper.UserMapper;
 import com.example.app.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.mockito.*;
 
 import java.util.List;
 import java.util.Optional;
 
+import static com.example.app.util.Messages.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class UserServiceTest {
 
+    @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private UserMapper userMapper;
+
+    @InjectMocks
     private UserService userService;
 
     private User user;
-    private Address address;
+    private UserDTO userDTO;
 
     @BeforeEach
     void setUp() {
-        userRepository = mock(UserRepository.class);
-        userService = new UserService(userRepository);
+        MockitoAnnotations.openMocks(this);
 
-        address = Address.builder()
-                .city("Paris")
-                .type("Street")
-                .addressName("Antoine Lavoisier")
-                .number("10")
-                .build();
+        user = new User();
+        user.setId(1L);
+        user.setAlive(true);
 
-        user = User.builder()
-                .id(1L)
-                .firstName("Jane")
-                .lastName("Doe")
-                .age(30)
-                .gender("female")
-                .address(address)
-                .alive(true)
-                .build();
+        userDTO = new UserDTO();
+        userDTO.setId(1L);
     }
 
     @Test
     void testAddUser() {
+        when(userMapper.toEntity(userDTO)).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
-        User saved = userService.addUser(user);
-        assertEquals("Jane", saved.getFirstName());
-        verify(userRepository, times(1)).save(user);
+        when(userMapper.toDto(user)).thenReturn(userDTO);
+
+        UserDTO result = userService.addUser(userDTO);
+
+        assertNotNull(result);
+        assertEquals(userDTO.getId(), result.getId());
+
+        verify(userMapper).toEntity(userDTO);
+        verify(userRepository).save(user);
+        verify(userMapper).toDto(user);
     }
 
     @Test
-    void testUpdateUser() {
-        User patch = User.builder()
-                .firstName("Janet")
-                .build();
+    void testUpdateUser_Success() {
+        UserDTO patchDTO = new UserDTO();
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        doNothing().when(userMapper).updateUserFromDto(patchDTO, user);
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toDto(user)).thenReturn(userDTO);
 
-        User updated = userService.updateUser(1L, patch);
-        assertEquals("Janet", updated.getFirstName());
-        assertEquals("Doe", updated.getLastName());
-        verify(userRepository, times(1)).save(user);
+        UserDTO result = userService.updateUser(user.getId(), patchDTO);
+
+        assertNotNull(result);
+        verify(userMapper).updateUserFromDto(patchDTO, user);
+        verify(userRepository).save(user);
+        verify(userMapper).toDto(user);
     }
 
     @Test
-    void testUpdateUserNotFound() {
-        User patch = User.builder()
-                .firstName("Janet")
-                .build();
-        when(userRepository.findById(2L)).thenReturn(Optional.empty());
+    void testUpdateUser_UserNotFound() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> userService.updateUser(2L, patch));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.updateUser(user.getId(), userDTO));
+        assertEquals(USER_NOT_FOUND + user.getId(), ex.getMessage());
     }
 
     @Test
-    void testMarkUserDead() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    void testMarkUserDead_Success() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.save(user)).thenReturn(user);
 
-        userService.markUserDead(1L);
+        userService.markUserDead(user.getId());
 
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(captor.capture());
-
-        assertFalse(captor.getValue().isAlive());
+        assertFalse(user.isAlive());
+        verify(userRepository).save(user);
     }
 
     @Test
-    void testMarkUserDeadNotFound() {
-        when(userRepository.findById(2L)).thenReturn(Optional.empty());
-        assertThrows(NotFoundException.class, () -> userService.markUserDead(2L));
+    void testMarkUserDead_UserNotFound() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.markUserDead(user.getId()));
+        assertEquals(USER_NOT_FOUND + user.getId(), ex.getMessage());
     }
 
     @Test
     void testFindHomonyms() {
-        when(userRepository.findByFirstNameAndLastName("Jane", "Doe")).thenReturn(List.of(user));
-        List<User> result = userService.findHomonyms("Jane", "Doe");
+        List<User> users = List.of(user);
+        List<UserDTO> dtos = List.of(userDTO);
+
+        when(userRepository.findByFirstNameAndLastName("John", "Doe")).thenReturn(users);
+        when(userMapper.toDtoList(users)).thenReturn(dtos);
+
+        List<UserDTO> result = userService.findHomonyms("John", "Doe");
+
         assertEquals(1, result.size());
-        assertEquals("Jane", result.get(0).getFirstName());
+        assertEquals(userDTO.getId(), result.get(0).getId());
     }
 
     @Test
     void testFindWomenByCity() {
-        when(userRepository.findByGenderAndAddress_CityIgnoreCase("female", "Paris")).thenReturn(List.of(user));
-        List<User> result = userService.findWomenByCity("Paris");
+        List<User> users = List.of(user);
+        List<UserDTO> dtos = List.of(userDTO);
+
+        when(userRepository.findByGenderAndAddress_CityIgnoreCase("female", "CityA")).thenReturn(users);
+        when(userMapper.toDtoList(users)).thenReturn(dtos);
+
+        List<UserDTO> result = userService.findWomenByCity("CityA");
+
         assertEquals(1, result.size());
-        assertEquals("female", result.get(0).getGender());
+        assertEquals(userDTO.getId(), result.get(0).getId());
     }
 
     @Test
-    void testFindById() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        User result = userService.findById(1L);
-        assertEquals("Jane", result.getFirstName());
+    void testFindById_Success() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userMapper.toDto(user)).thenReturn(userDTO);
+
+        UserDTO result = userService.findById(user.getId());
+
+        assertEquals(userDTO.getId(), result.getId());
     }
 
     @Test
-    void testFindByIdNotFound() {
-        when(userRepository.findById(2L)).thenReturn(Optional.empty());
-        assertThrows(NotFoundException.class, () -> userService.findById(2L));
+    void testFindById_UserNotFound() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.findById(user.getId()));
+        assertEquals(USER_NOT_FOUND + user.getId(), ex.getMessage());
     }
 }

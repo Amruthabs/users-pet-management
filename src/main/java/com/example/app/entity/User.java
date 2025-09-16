@@ -1,48 +1,68 @@
 package com.example.app.entity;
 
-import com.example.app.entity.Address;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * User entity representing a person in the system.
+ */
 @Entity
 @Table(name = "app_user")
 @Getter
-@Setter        
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder        
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
+    @ToString.Include
     private String firstName;
+
+    @ToString.Include
     private String lastName;
+
     private Integer age;
+
     private String gender;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Address address;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
-     @Builder.Default
+    @Builder.Default
     private List<Pet> pets = new ArrayList<>();
 
+    @Builder.Default
     private boolean alive = true;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User u)) return false;
-        return Objects.equals(id, u.id);
+    /**
+     * Convenience method to add a pet.
+     */
+    public void addPet(Pet pet) {
+        if (pet != null && !pets.contains(pet)) {
+            pets.add(pet);
+            pet.setOwner(this);
+        }
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    /**
+     * Convenience method to remove a pet.
+     */
+    public void removePet(Pet pet) {
+        if (pet != null && pets.contains(pet)) {
+            pets.remove(pet);
+            pet.setOwner(null);
+        }
     }
 }

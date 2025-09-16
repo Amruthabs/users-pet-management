@@ -3,10 +3,6 @@ package com.example.app.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-/**
- * Address entity used for Users' addresses.
- * Example formatted: "10, road Avenue, India"
- */
 @Entity
 @Table(name = "address")
 @Getter
@@ -14,20 +10,21 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class Address {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @EqualsAndHashCode.Include
     private String city;
-    private String type;       
+
+    private String type;
     private String addressName;
     private String number;
 
-    /**
-     * Returns a formatted address string like "10, road Avenue, India"
-     */
     public String formatted() {
         StringBuilder sb = new StringBuilder();
         if (number != null && !number.isBlank()) sb.append(number).append(", ");
@@ -36,4 +33,6 @@ public class Address {
         if (city != null) sb.append(", ").append(city);
         return sb.toString();
     }
+
+
 }

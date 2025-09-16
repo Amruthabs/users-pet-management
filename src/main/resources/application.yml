@@ -20,4 +20,8 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    try-it-out-enabled: true
+    path: /swagger-ui/index.html
+  logging:
+    level:
+      com.example.app: INFO   # or DEBUG for more detailed logs

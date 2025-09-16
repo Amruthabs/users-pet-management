@@ -1,59 +1,106 @@
 package com.example.app.controller;
 
-import com.example.app.DemoApplication;
-import com.example.app.entity.Address;
-import com.example.app.entity.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.app.dto.PetDTO;
+import com.example.app.dto.UserDTO;
+import com.example.app.service.PetService;
+import com.example.app.service.UserService;
+import com.example.app.mapper.UserMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
+import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = DemoApplication.class)
-@AutoConfigureMockMvc
-@EnableAutoConfiguration(exclude = {
-        SecurityAutoConfiguration.class,
-        UserDetailsServiceAutoConfiguration.class
-})
+@ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Mock
+    private UserService userService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Mock
+    private PetService petService;
+
+    @Mock
+    private UserMapper userMapper;
+
+    @InjectMocks
+    private UserController userController;
+
+    private UserDTO userDTO;
+    private PetDTO petDTO;
+
+    @BeforeEach
+    void setUp() {
+        userDTO = new UserDTO();
+        userDTO.setId(1L);
+        userDTO.setFirstName("John");
+        userDTO.setLastName("Doe");
+
+        petDTO = new PetDTO();
+        petDTO.setId(10L);
+        petDTO.setType("Dog");
+        petDTO.setOwner(userDTO);
+    }
 
     @Test
-    void testAddUser() throws Exception {
-        User user = User.builder()
-                .firstName("Jane")
-                .lastName("Doe")
-                .age(30)
-                .gender("female")
-                .address(Address.builder()
-                        .city("Paris")
-                        .type("road")
-                        .addressName("Antoine Lavoisier")
-                        .number("10")
-                        .build())
-                .pets(new ArrayList<>())
-                .build();
+    void testAddUser() {
+        when(userService.addUser(userDTO)).thenReturn(userDTO);
 
-        String json = objectMapper.writeValueAsString(user);
+        ResponseEntity<UserDTO> response = userController.addUser(userDTO);
 
-        mockMvc.perform(post("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isOk());
+        assertThat(response.getBody()).isEqualTo(userDTO);
+        verify(userService, times(1)).addUser(userDTO);
+    }
+
+    @Test
+    void testUpdateUser() {
+        when(userService.updateUser(1L, userDTO)).thenReturn(userDTO);
+
+        ResponseEntity<UserDTO> response = userController.updateUser(1L, userDTO);
+
+        assertThat(response.getBody()).isEqualTo(userDTO);
+        verify(userService, times(1)).updateUser(1L, userDTO);
+    }
+
+    @Test
+    void testFindByName() {
+        List<UserDTO> users = List.of(userDTO);
+        when(userService.findHomonyms("John", "Doe")).thenReturn(users);
+
+        ResponseEntity<List<UserDTO>> response = userController.findByName("John", "Doe");
+
+        assertThat(response.getBody()).isEqualTo(users);
+        verify(userService, times(1)).findHomonyms("John", "Doe");
+    }
+
+    @Test
+    void testWomenByCity() {
+        List<UserDTO> users = List.of(userDTO);
+        when(userService.findWomenByCity("Melbourne")).thenReturn(users);
+
+        ResponseEntity<List<UserDTO>> response = userController.womenByCity("Melbourne");
+
+        assertThat(response.getBody()).isEqualTo(users);
+        verify(userService, times(1)).findWomenByCity("Melbourne");
+    }
+
+    @Test
+    void testUsersByPetTypeAndCity() {
+        List<PetDTO> pets = List.of(petDTO);
+        when(petService.findPetsByTypeAndCity("Dog", "Melbourne")).thenReturn(pets);
+        when(userService.findById(1L)).thenReturn(userDTO);
+
+        ResponseEntity<List<UserDTO>> response = userController.usersByPetTypeAndCity("Dog", "Melbourne");
+
+        assertThat(response.getBody()).containsExactly(userDTO);
+        verify(petService, times(1)).findPetsByTypeAndCity("Dog", "Melbourne");
+        verify(userService, times(1)).findById(1L);
     }
 }

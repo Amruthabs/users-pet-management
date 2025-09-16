@@ -3,6 +3,8 @@ package com.example.app.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 /**
  * Pet entity.
  *
@@ -18,19 +20,23 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class Pet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
+    @ToString.Include
     private String name;
 
     private Integer age;
 
     private String type;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
 
@@ -42,8 +48,17 @@ public class Pet {
      */
     public void assignOwner(User user) {
         this.owner = user;
-        if (user != null && !user.getPets().contains(this)) {
+        if (user != null && user.getPets() != null && !user.getPets().contains(this)) {
             user.getPets().add(this);
         }
+    }
+
+    /**
+     * Optional: Convenience for formatted pet info
+     */
+    public String description() {
+        return name + (type != null ? " (" + type + ")" : "") +
+                (age != null ? ", Age: " + age : "") +
+                (owner != null ? ", Owner: " + owner.getFirstName() + " " + owner.getLastName() : "");
     }
 }
