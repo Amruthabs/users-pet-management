@@ -45,7 +45,7 @@ public class UserService {
 
         User existing = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.error("User not found with id: {}", id);
+                    log.error(ERROR_USER_NOT_FOUND, id);
                     return new NotFoundException(USER_NOT_FOUND + id);
                 });
 
@@ -62,7 +62,7 @@ public class UserService {
         log.warn("Marking user with id {} as dead", id);
         User u = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.error("User not found with id: {}", id);
+                    log.error(ERROR_USER_NOT_FOUND, id);
                     return new NotFoundException(USER_NOT_FOUND + id);
                 });
         u.setAlive(false);
@@ -90,7 +90,7 @@ public class UserService {
         log.info("Fetching user by id: {}", id);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.error("User not found with id: {}", id);
+                    log.error(ERROR_USER_NOT_FOUND, id);
                     return new NotFoundException(USER_NOT_FOUND + id);
                 });
         return userMapper.toDto(user);

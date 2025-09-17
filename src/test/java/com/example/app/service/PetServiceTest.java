@@ -19,6 +19,8 @@ import static org.mockito.Mockito.*;
 
 class PetServiceTest {
 
+    private static final String CITY = "CITY";
+
     @Mock
     private PetRepository petRepository;
 
@@ -57,7 +59,7 @@ class PetServiceTest {
     }
 
     @Test
-    void testAddPet_WithOwner() {
+    void testAddPetWithOwner() {
         when(petMapper.toEntity(petDTO)).thenReturn(pet);
         when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
         when(petRepository.save(pet)).thenReturn(pet);
@@ -75,7 +77,7 @@ class PetServiceTest {
     }
 
     @Test
-    void testAddPet_OwnerNotFound() {
+    void testAddPetOwnerNotFound() {
         when(petMapper.toEntity(petDTO)).thenReturn(pet);
         when(userRepository.findById(owner.getId())).thenReturn(Optional.empty());
 
@@ -84,7 +86,7 @@ class PetServiceTest {
     }
 
     @Test
-    void testUpdatePet_WithOwner() {
+    void testUpdatePetWithOwner() {
         PetDTO patchDTO = new PetDTO();
         patchDTO.setOwner(ownerDTO);
 
@@ -103,7 +105,7 @@ class PetServiceTest {
     }
 
     @Test
-    void testUpdatePet_PetNotFound() {
+    void testUpdatePetPetNotFound() {
         when(petRepository.findById(pet.getId())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class, () -> petService.updatePet(pet.getId(), petDTO));
@@ -111,7 +113,7 @@ class PetServiceTest {
     }
 
     @Test
-    void testUpdatePet_OwnerNotFound() {
+    void testUpdatePetOwnerNotFound() {
         PetDTO patchDTO = new PetDTO();
         patchDTO.setOwner(ownerDTO);
 
@@ -134,7 +136,7 @@ class PetServiceTest {
     }
 
     @Test
-    void testMarkPetDead_NotFound() {
+    void testMarkPetDeadNotFound() {
         when(petRepository.findById(pet.getId())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class, () -> petService.markPetDead(pet.getId()));
@@ -154,10 +156,10 @@ class PetServiceTest {
 
     @Test
     void testFindPetsByCity() {
-        when(petRepository.findByOwner_Address_CityIgnoreCaseAndAliveTrue("CityA")).thenReturn(List.of(pet));
+        when(petRepository.findByOwner_Address_CityIgnoreCaseAndAliveTrue(CITY)).thenReturn(List.of(pet));
         when(petMapper.toDtoList(List.of(pet))).thenReturn(List.of(petDTO));
 
-        List<PetDTO> result = petService.findPetsByCity("CityA");
+        List<PetDTO> result = petService.findPetsByCity(CITY);
 
         assertEquals(1, result.size());
         assertEquals(petDTO.getId(), result.get(0).getId());
@@ -165,11 +167,11 @@ class PetServiceTest {
 
     @Test
     void testFindPetsByTypeAndCity() {
-        when(petRepository.findByTypeIgnoreCaseAndOwner_Address_CityIgnoreCaseAndAliveTrue("Dog", "CityA"))
+        when(petRepository.findByTypeIgnoreCaseAndOwner_Address_CityIgnoreCaseAndAliveTrue("Dog", CITY))
                 .thenReturn(List.of(pet));
         when(petMapper.toDtoList(List.of(pet))).thenReturn(List.of(petDTO));
 
-        List<PetDTO> result = petService.findPetsByTypeAndCity("Dog", "CityA");
+        List<PetDTO> result = petService.findPetsByTypeAndCity("Dog", CITY);
 
         assertEquals(1, result.size());
         assertEquals(petDTO.getId(), result.get(0).getId());
@@ -177,11 +179,11 @@ class PetServiceTest {
 
     @Test
     void testFindPetsByGenderAndCity() {
-        when(petRepository.findByOwner_GenderIgnoreCaseAndOwner_Address_CityIgnoreCaseAndAliveTrue("female", "CityA"))
+        when(petRepository.findByOwner_GenderIgnoreCaseAndOwner_Address_CityIgnoreCaseAndAliveTrue("female", CITY))
                 .thenReturn(List.of(pet));
         when(petMapper.toDtoList(List.of(pet))).thenReturn(List.of(petDTO));
 
-        List<PetDTO> result = petService.findPetsByGenderAndCity("female", "CityA");
+        List<PetDTO> result = petService.findPetsByGenderAndCity("female", CITY);
 
         assertEquals(1, result.size());
         assertEquals(petDTO.getId(), result.get(0).getId());

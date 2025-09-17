@@ -7,7 +7,6 @@ import com.example.app.service.PetService;
 import com.example.app.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
-import com.example.app.mapper.UserMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +22,10 @@ public class UserController {
 
     private final UserService userService;
     private final PetService petService;
-    private final UserMapper userMapper;
 
-    public UserController(UserService userService, PetService petService, UserMapper userMapper) {
+    public UserController(UserService userService, PetService petService) {
     this.userService = userService;
     this.petService = petService;
-    this.userMapper = userMapper;
     }
 
     @Operation(summary = "Add a new user")

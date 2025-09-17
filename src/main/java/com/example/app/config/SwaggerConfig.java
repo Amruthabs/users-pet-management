@@ -18,7 +18,7 @@ public class SwaggerConfig {
                         .description("API for managing users, addresses and pets (H2 in-memory)")
                         .version("1.0.0"))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080") // Replace with your actual API base URL
+                        new Server().url("http://localhost:8080")
                 ));
     }
 }

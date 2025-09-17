@@ -8,10 +8,6 @@ import java.util.Objects;
 /**
  * Pet entity.
  *
- * Note:
- * - Single owner per Pet record.
- * - Multiple owners for the same physical pet would require a join entity (Ownership).
- * - Current design allows multiple users to share the same Address.
  */
 @Entity
 @Table(name = "pet")

@@ -59,7 +59,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testUpdateUser_Success() {
+    void testUpdateUserSuccess() {
         UserDTO patchDTO = new UserDTO();
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -76,7 +76,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testUpdateUser_UserNotFound() {
+    void testUpdateUserUserNotFound() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class,
@@ -85,7 +85,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testMarkUserDead_Success() {
+    void testMarkUserDeadSuccess() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
 
@@ -96,7 +96,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testMarkUserDead_UserNotFound() {
+    void testMarkUserDeadUserNotFound() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class,
@@ -133,7 +133,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testFindById_Success() {
+    void testFindByIdSuccess() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(userDTO);
 
@@ -143,7 +143,7 @@ class UserServiceTest {
     }
 
     @Test
-    void testFindById_UserNotFound() {
+    void testFindByIdUserNotFound() {
         when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class,

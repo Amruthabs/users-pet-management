@@ -21,6 +21,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 
+    private static final String CITY = "Melbourne";
+
     @Mock
     private UserService userService;
 
@@ -83,24 +85,24 @@ class UserControllerTest {
     @Test
     void testWomenByCity() {
         List<UserDTO> users = List.of(userDTO);
-        when(userService.findWomenByCity("Melbourne")).thenReturn(users);
+        when(userService.findWomenByCity(CITY)).thenReturn(users);
 
-        ResponseEntity<List<UserDTO>> response = userController.womenByCity("Melbourne");
+        ResponseEntity<List<UserDTO>> response = userController.womenByCity(CITY);
 
         assertThat(response.getBody()).isEqualTo(users);
-        verify(userService, times(1)).findWomenByCity("Melbourne");
+        verify(userService, times(1)).findWomenByCity(CITY);
     }
 
     @Test
     void testUsersByPetTypeAndCity() {
         List<PetDTO> pets = List.of(petDTO);
-        when(petService.findPetsByTypeAndCity("Dog", "Melbourne")).thenReturn(pets);
+        when(petService.findPetsByTypeAndCity("Dog", CITY)).thenReturn(pets);
         when(userService.findById(1L)).thenReturn(userDTO);
 
-        ResponseEntity<List<UserDTO>> response = userController.usersByPetTypeAndCity("Dog", "Melbourne");
+        ResponseEntity<List<UserDTO>> response = userController.usersByPetTypeAndCity("Dog", CITY);
 
         assertThat(response.getBody()).containsExactly(userDTO);
-        verify(petService, times(1)).findPetsByTypeAndCity("Dog", "Melbourne");
+        verify(petService, times(1)).findPetsByTypeAndCity("Dog", CITY);
         verify(userService, times(1)).findById(1L);
     }
 }

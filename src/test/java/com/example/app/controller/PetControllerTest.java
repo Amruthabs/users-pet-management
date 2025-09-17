@@ -18,6 +18,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PetControllerTest {
 
+    private static final String CITY = "Melbourne";
+    private static final String GENDER = "female";
+
     @Mock
     private PetService petService;
 
@@ -77,33 +80,33 @@ class PetControllerTest {
     @Test
     void testPetsByCity() {
         List<PetDTO> list = List.of(petDTO);
-        when(petService.findPetsByCity("Melbourne")).thenReturn(list);
+        when(petService.findPetsByCity(CITY)).thenReturn(list);
 
-        ResponseEntity<List<PetDTO>> response = petController.petsByCity("Melbourne");
+        ResponseEntity<List<PetDTO>> response = petController.petsByCity(CITY);
 
         assertThat(response.getBody()).isEqualTo(list);
-        verify(petService, times(1)).findPetsByCity("Melbourne");
+        verify(petService, times(1)).findPetsByCity(CITY);
     }
 
     @Test
     void testPetsByTypeAndCity() {
         List<PetDTO> list = List.of(petDTO);
-        when(petService.findPetsByTypeAndCity("Dog", "Melbourne")).thenReturn(list);
+        when(petService.findPetsByTypeAndCity("Dog", CITY)).thenReturn(list);
 
-        ResponseEntity<List<PetDTO>> response = petController.petsByTypeAndCity("Dog", "Melbourne");
+        ResponseEntity<List<PetDTO>> response = petController.petsByTypeAndCity("Dog", CITY);
 
         assertThat(response.getBody()).isEqualTo(list);
-        verify(petService, times(1)).findPetsByTypeAndCity("Dog", "Melbourne");
+        verify(petService, times(1)).findPetsByTypeAndCity("Dog", CITY);
     }
 
     @Test
     void testPetsByGenderCity() {
         List<PetDTO> list = List.of(petDTO);
-        when(petService.findPetsByGenderAndCity("female", "Melbourne")).thenReturn(list);
+        when(petService.findPetsByGenderAndCity(GENDER, CITY)).thenReturn(list);
 
-        ResponseEntity<List<PetDTO>> response = petController.petsByGenderCity("female", "Melbourne");
+        ResponseEntity<List<PetDTO>> response = petController.petsByGenderCity(GENDER, CITY);
 
         assertThat(response.getBody()).isEqualTo(list);
-        verify(petService, times(1)).findPetsByGenderAndCity("female", "Melbourne");
+        verify(petService, times(1)).findPetsByGenderAndCity(GENDER, CITY);
     }
 }
